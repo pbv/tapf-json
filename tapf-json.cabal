@@ -17,10 +17,13 @@ library
   hs-source-dirs:      src
   exposed-modules:     Json.Types
                        Json.Parser
+                       Json.Test
   build-depends:       base >= 4.7 && < 5,
-                       parsec
+                       parsec,
+                       QuickCheck
   default-language:    Haskell2010
 
+  
 source-repository head
   type:     git
   location: https://github.com/githubuser/tapf-json

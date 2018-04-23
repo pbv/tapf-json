@@ -7,9 +7,11 @@
 -}
 module Json.Parser where
 
-import Json.Types
-import Text.Parsec 
-import Data.Char (isDigit)
+import           Json.Types
+import           Text.Parsec
+import qualified Text.Parsec.Token as P
+import           Text.Parsec.Language (emptyDef)
+import           Data.Char (isDigit)
 
 -- | specialized type for string parser with no user state
 type Parser = Parsec String ()
@@ -32,6 +34,13 @@ bool :: Parser Bool
 bool = do symbol "true"; return True
        <|> do symbol "false"; return False
 
+-- | create a token parser
+lexer = P.makeTokenParser emptyDef
+stringLit = P.stringLiteral lexer
+integer = P.integer lexer
+               
+
+{-
 -- | parse a decimal integer with optional sign
 integer :: Parser Integer
 integer = lexeme (do
@@ -39,9 +48,6 @@ integer = lexeme (do
   n <- read <$> many1 (satisfy isDigit)
   return (s * n)
   <?> "number")
-  where
-    sign :: Parser Integer
-    sign = do char '+'; return 1 <|> do char '-'; return (-1)
 
 -- | parse a string literal
 stringLit :: Parser String
@@ -50,6 +56,9 @@ stringLit = lexeme $ do
   s <- many (satisfy (/='\"'))
   char '\"'
   return s
+-}
+
+
 
 -- | require brackets or braces around a parser; uses
 -- between :: Parser open -> Parser close -> Parser a -> Parser a
