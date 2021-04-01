@@ -1,23 +1,10 @@
-{-
-  Types for representing JSON value
--}
-module Json.Types where
+--
+-- Basic pretty-printing for JSON values
+--
+module Pretty where
 
+import Types
 import Data.List (intersperse)
-
--- | a simplified JSON values:
--- no floating point numbers
-data JValue
-  = JString String
-  | JNumber Integer
-  | JBool Bool
-  | JArray [JValue]
-  | JObject [(String, JValue)]
-  | JNull
-  deriving Eq
-
-instance Show JValue where
-   show = showJson
 
 showJson :: JValue -> String
 showJson (JString s) = show s
@@ -30,3 +17,4 @@ showJson (JObject kvs)
   = "{" ++ concat (intersperse ", " $ map showPair kvs) ++ "}"
   where
     showPair (k,v) = show k ++ ": " ++ showJson v
+

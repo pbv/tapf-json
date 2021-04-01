@@ -1,0 +1,20 @@
+name:            tapf-json
+version:         0.2
+github:          "pbv/tapf-json"
+license:         MIT
+author:          "Pedro Baltazar Vasconcelos"
+maintainer:      "pbv@dcc.fc.up.pt"
+copyright:       "2021 Pedro Baltazar Vasconcelos"
+
+extra-source-files:
+- README.md
+
+
+dependencies:
+- base >= 4.7 && < 5
+- parsec
+- QuickCheck
+
+library:
+  source-dirs: src 
+  

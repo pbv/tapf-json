@@ -5,13 +5,11 @@
 
   Pedro Vasconcelos, 2017
 -}
-module Json.Parser where
+module Parser where
 
-import           Json.Types
+import           Types
 import           Text.Parsec
-import qualified Text.Parsec.Token as P
-import           Text.Parsec.Language (emptyDef)
-import           Data.Char (isDigit)
+import           Data.Char (isPrint, isDigit)
 
 -- | specialized type for string parser with no user state
 type Parser = Parsec String ()
@@ -24,9 +22,8 @@ lexeme :: Parser a -> Parser a
 lexeme p = do v<-p; spaces; return v
 
 -- | parser a separator or parenthesis
--- use try to ensure that no input is consumed if string does not match
 symbol :: String -> Parser String
-symbol s = lexeme (try (string s)) <?> s
+symbol s = lexeme (string s)
 
 
 -- | parse a boolean value
@@ -34,13 +31,6 @@ bool :: Parser Bool
 bool = do symbol "true"; return True
        <|> do symbol "false"; return False
 
--- | create a token parser
-lexer = P.makeTokenParser emptyDef
-stringLit = P.stringLiteral lexer
-integer = P.integer lexer
-               
-
-{-
 -- | parse a decimal integer with optional sign
 integer :: Parser Integer
 integer = lexeme (do
@@ -49,14 +39,17 @@ integer = lexeme (do
   return (s * n)
   <?> "number")
 
+sign = do char '+'; return 1
+       <|>
+       do char '-'; return (-1)
+
 -- | parse a string literal
 stringLit :: Parser String
 stringLit = lexeme $ do
   char '\"'
-  s <- many (satisfy (/='\"'))
+  s <- many (satisfy (\x -> isPrint x && x/='\"'))
   char '\"'
   return s
--}
 
 
 
@@ -74,11 +67,11 @@ comma = symbol ","
 jsonVal :: Parser JValue
 jsonVal
   = do symbol "null"; return JNull
-  <|> JNumber <$> integer
-  <|> JBool <$> bool
-  <|> JString <$> stringLit
-  <|> JArray <$> brackets (jsonVal `sepBy` comma)
-  <|> JObject <$> braces (keyVal `sepBy` comma)
+  <|> do n <- integer; return (JNumber n)
+  <|> do b <- bool; return (JBool b)
+  <|> do s <- stringLit; return (JString s)
+  <|> do arr <- brackets (jsonVal `sepBy` comma); return (JArray arr)
+  <|> do kvs <- braces (keyVal `sepBy` comma); return (JObject kvs)
 
 
 -- | key-value pair
