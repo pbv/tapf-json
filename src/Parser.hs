@@ -3,7 +3,7 @@
   1) no floating point numbers;
   2) no handling of escape characters in string literals
 
-  Pedro Vasconcelos, 2017
+  Pedro Vasconcelos, 2026
 -}
 module Parser where
 
@@ -34,9 +34,9 @@ bool = do symbol "true"; return True
 -- | parse a decimal integer with optional sign
 integer :: Parser Integer
 integer = lexeme (do
-  s <- option 1 sign
-  n <- read <$> many1 (satisfy isDigit)
-  return (s * n)
+  sign <- option 1 sign
+  digits <- many1 (satisfy isDigit)
+  return (sign * read digits)
   <?> "number")
 
 sign = do char '+'; return 1

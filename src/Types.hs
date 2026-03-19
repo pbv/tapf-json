@@ -1,5 +1,7 @@
 {-
   Types for representing JSON values
+
+  See: https://www.json.org/json-en.html
 -}
 module Types where
 
