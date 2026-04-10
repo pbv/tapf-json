@@ -5,7 +5,7 @@ import Types
 import Parser
 import Pretty
 
-import Text.Parsec
+import Text.Parsec (parse)
 import Test.QuickCheck
 
 -- Round-trip property:
@@ -40,30 +40,36 @@ genObject size = do
   n <- choose (0, size)
   let size' = size `div` n
   vs <- vectorOf n (genJson size')
-  ks <- vectorOf n genNoEscape
+  ks <- vectorOf n arbitrary 
   return (JObject $ zip ks vs)
 
 
 genBasic :: Gen JValue
 genBasic = oneof [ JNumber <$> arbitrary
                   , JBool <$> arbitrary
-                  , JString <$> genNoEscape
-                  , return JNull
+                  , JString <$> arbitrary 
+                  , pure JNull
                   ]
 
--- generator for strings of haracters w/o escapes
-genNoEscape :: Gen String
-genNoEscape = listOf (choose (' ', '}'))
 
--- shrinker for JSON values
 shrinkJson :: JValue -> [JValue]
+shrinkJson (JNumber n) = JNumber <$> shrink n
+  -- [JNumber n' | n'<-shrink n]
+  -- map JNumber (shrink n)
+
+shrinkJson (JBool b) = JBool <$> shrink b
+shrinkJson (JString s) = JString <$> shrink s
 shrinkJson (JArray vs)
-  = [v | v<-vs] ++  [JArray vs' | vs'<-shrink vs]
-shrinkJson (JObject kvs)
-  = [v | (_,v)<-kvs] ++ [JObject kvs' | kvs'<-shrink kvs]
-shrinkJson (JNumber n)
-  = [JNumber n' | n'<-shrink n]
-shrinkJson (JString s)
-  = [JString s' | s'<-shrink s]
-shrinkJson _
-  = []
+  = vs ++ (JArray <$> shrinkList shrinkJson vs)
+shrinkJson (JObject kvs) 
+  = map (JString . fst) kvs
+    ++
+    map snd kvs 
+    ++
+    (JObject <$> shrinkList shrinkPair kvs)
+  where 
+    shrinkPair :: (String,JValue) -> [(String,JValue)]
+    shrinkPair (k,v) = 
+       [(k',v) | k'<-shrink k] ++ 
+       [(k,v') |v'<-shrinkJson v]
+shrinkJson JNull = []

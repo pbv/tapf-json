@@ -9,6 +9,8 @@ module Parser where
 
 import           Types
 import           Text.Parsec
+import qualified Text.Parsec.Token as P
+import           Text.Parsec.Language(haskell)
 import           Data.Char (isPrint, isDigit)
 
 -- | specialized type for string parser with no user state
@@ -45,13 +47,16 @@ sign = do char '+'; return 1
 
 -- | parse a string literal
 stringLit :: Parser String
+stringLit = P.stringLiteral haskell
+
+{-
+stringLit :: Parser String
 stringLit = lexeme $ do
   char '\"'
   s <- many (satisfy (\x -> isPrint x && x/='\"'))
   char '\"'
   return s
-
-
+-}
 
 -- | require brackets or braces around a parser; uses
 -- between :: Parser open -> Parser close -> Parser a -> Parser a

@@ -6,8 +6,7 @@
 module Types where
 
 -- | simplified JSON values
--- only integers,
--- no floating point numbers
+-- only integers, no floating point numbers
 data JValue
   = JString String
   | JNumber Integer
